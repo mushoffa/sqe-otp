@@ -2,11 +2,14 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"sqe-otp/domain/entity"
 	"sqe-otp/domain/repository"
 	"sqe-otp/infrastructure/postgres"
 	"sqe-otp/presentation/repository/table"
+
+	"gorm.io/gorm"
 )
 
 type otp struct {
@@ -31,7 +34,10 @@ func (r *otp) FindByCode(ctx context.Context, code string) (entity.Otp, error) {
 	if err := r.db.QueryByCondition(ctx, map[string]any{
 		"code": code,
 	}, &query); err != nil {
-		return entity.Otp{}, err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return entity.Otp{}, entity.ErrOtpNotFound
+		}
+		return entity.Otp{}, entity.OtpError{Message: "internal_server_error", Description: err.Error()}
 	}
 
 	otp := query.Otp
