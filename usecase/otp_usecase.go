@@ -55,5 +55,6 @@ func (u *otp) ValidateOtp(ctx context.Context, userID, code string) error {
 	}
 
 	u.r.UpdateStatus(ctx, hashedOtp, entity.OtpStatusValidated)
+	u.r.ClearSession(ctx, userID)
 	return nil
 }
