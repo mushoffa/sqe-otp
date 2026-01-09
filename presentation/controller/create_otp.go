@@ -16,7 +16,7 @@ func (c *otp) createOtp() fiber.Handler {
 
 		otp, err := c.u.GenerateOtp(ctx.UserContext(), request.UserID)
 		if err != nil {
-			return c.BadRequest(ctx, err.Error())
+			return c.BadRequest(ctx, err)
 		}
 
 		return c.Success(ctx, map[string]any{
