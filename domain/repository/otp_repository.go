@@ -8,6 +8,6 @@ import (
 
 type OtpRepository interface {
 	Insert(context.Context, entity.Otp) error
-	FindByCode(context.Context, string) error
-	UpdateStatus(context.Context, entity.OtpStatus) error
+	FindByCode(context.Context, string) (entity.Otp, error)
+	UpdateStatus(context.Context, string, entity.OtpStatus) error
 }
