@@ -1,0 +1,35 @@
+services:
+  pg-sqe:
+    image: postgres
+    container_name: pg-sqe
+    environment:
+      - POSTGRES_DB=sqe
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+    ports:
+      - 9596:5432
+    networks:
+      - sqe-net
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis-sqe:
+    image: redis
+    container_name: redis-sqe
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - 9597:6379
+    networks:
+      - sqe-net
+    restart: unless-stopped
+
+  liquibase:
+    image: liquibase/liquibase:latest
+    container_name: sqe-migration
+    command: --defaults-file=/liquibase/liquibase.properties update
+
+networks:
+  sqe-net:
+    driver: bridge
