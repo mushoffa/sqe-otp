@@ -9,6 +9,7 @@ import (
 
 	"sqe-otp/config"
 	"sqe-otp/infrastructure/postgres"
+	"sqe-otp/infrastructure/redis"
 	"sqe-otp/infrastructure/rest"
 	"sqe-otp/presentation/controller"
 	"sqe-otp/presentation/repository"
@@ -21,9 +22,10 @@ func main() {
 
 	cfg := config.Get()
 	db := postgres.New(cfg.Database)
+	redis := redis.New(cfg.Redis.Address())
 	server := rest.NewServer(cfg.HttpServer)
 
-	r := repository.NewOtpRepository(db)
+	r := repository.NewOtpRepository(db, redis)
 	u := usecase.NewOtpUsecase(r)
 	c := controller.NewOtpController(u)
 
@@ -38,5 +40,6 @@ func main() {
 	defer cancel()
 
 	db.Shutdown()
+	redis.Close()
 	server.Shutdown(ctx)
 }
