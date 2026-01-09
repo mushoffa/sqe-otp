@@ -2,15 +2,20 @@ package entity
 
 import (
 	"crypto/rand"
-	"crypto/sha256"
-	"encoding/base64"
 	"fmt"
 	"math/big"
+	"time"
+
+	vo "sqe-otp/domain/valueobject"
 )
 
 type Otp struct {
-	userID string
-	code   string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	ExpiredAt time.Time
+	UserID    string
+	Code      string `gorm:"-"`
+	Status    OtpStatus
 }
 
 func NewOtp(userID string) (Otp, error) {
@@ -21,21 +26,44 @@ func NewOtp(userID string) (Otp, error) {
 	if err != nil {
 		return Otp{}, err
 	}
+
+	now := time.Now()
+
 	return Otp{
-		userID: userID,
-		code:   code,
+		CreatedAt: now,
+		UpdatedAt: now,
+		ExpiredAt: now.Add(time.Duration(2) * time.Minute),
+		UserID:    userID,
+		Code:      code,
+		Status:    OtpStatusCreated,
 	}, nil
 }
 
+func (e Otp) GetUserID() string {
+	return e.UserID
+}
+
 func (e Otp) GetCode() string {
-	return e.code
+	return e.Code
 }
 
 func (e Otp) Hash() string {
-	payload := fmt.Sprintf("%s%s", e.userID, e.code)
-	hasher := sha256.New()
-	hasher.Write([]byte(payload))
-	return base64.StdEncoding.EncodeToString(hasher.Sum(nil))
+	return vo.Hasher(fmt.Sprintf("%s%s", e.UserID, e.Code))
+}
+
+func (e Otp) ValidateStatus() error {
+	switch e.Status {
+	case OtpStatusValidated:
+		return ErrOtpValidated
+	case OtpStatusExpired:
+		return ErrOtpExpired
+	default:
+		return nil
+	}
+}
+
+func (e Otp) IsExpired() bool {
+	return time.Now().After(e.ExpiredAt)
 }
 
 func isUserIdValid(userID string) bool {
@@ -48,7 +76,7 @@ func generate() (string, error) {
 	min := 100000
 	max := 999999
 	// The upper bound for rand.Int is exclusive, so we use max - min + 1.
-	rangeSize := big.NewInt(int64(max - min + 1)) 
+	rangeSize := big.NewInt(int64(max - min + 1))
 
 	// Generate a random number n in the range [0, rangeSize).
 	n, err := rand.Int(rand.Reader, rangeSize)
@@ -57,5 +85,5 @@ func generate() (string, error) {
 	}
 
 	// Add the minimum value to the generated number to get a number in the desired range [100000, 999999].
-	return fmt.Sprintf("%06d",(int(n.Int64()) + min)), nil
+	return fmt.Sprintf("%06d", (int(n.Int64()) + min)), nil
 }
