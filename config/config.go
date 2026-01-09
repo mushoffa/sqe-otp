@@ -51,6 +51,10 @@ type Redis struct {
 	Port int    `mapstructure:"port"`
 }
 
+func (c Redis) Address() string {
+	return fmt.Sprintf("%s:%d", c.Host, c.Port)
+}
+
 func Get() *Config {
 	c := new(Config)
 	viper.AddConfigPath("./config")
