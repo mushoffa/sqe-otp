@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"  
+  	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  	xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+  		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd
+  		http://www.liquibase.org/xml/ns/dbchangelog-ext
+  		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="001-1" author="Mushoffa">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="otps"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="otps">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_otps" nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP WITH TIMEZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP WITH TIMEZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="expired_at" type="TIMESTAMP WITH TIMEZONE"/>
+            <column name="user_id" type="VARCHAR(40)"/>
+            <column name="code" type="TEXT"/>
+            <column name="status" type="VARCHAR(15)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="001-2" author="Mushoffa">
+        <createIndex tableName="otps" indexName="idx_otps_code">
+            <column name="code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="001-3" author="Mushoffa">
+        <createIndex tableName="otps" indexName="idx_otps_user_id">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>
